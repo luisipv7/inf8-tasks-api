@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from models.task_model import TaskStatus
 class TaskBase(BaseModel):
     title: str = Field(..., example="Fazer compras")
     description: str = Field(..., example="Comprar leite, pão e ovos")
@@ -8,3 +9,14 @@ class TaskBase(BaseModel):
 
 class TaskCreate(TaskBase):
     pass
+
+class TaskUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = Field(default=None)
+    comments: str | None = Field(default=None)
+    status: TaskStatus | None = Field(default=None)
+    owner_id: int | None = Field(default=None)
+
+class TaskResponse(TaskBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
