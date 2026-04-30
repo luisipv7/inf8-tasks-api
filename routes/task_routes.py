@@ -1,6 +1,11 @@
-from controllers.task_controller import TaskController
 from fastapi import APIRouter
-from schemas.task_schema import TaskCreate
+
+try:
+    from ..controllers.task_controller import TaskController
+    from ..schemas.task_schema import TaskCreate, TaskUpdate
+except ImportError:
+    from controllers.task_controller import TaskController
+    from schemas.task_schema import TaskCreate, TaskUpdate
 
 router = APIRouter(
     prefix="/tasks",
@@ -11,12 +16,20 @@ router = APIRouter(
 async def tasks(owner: str | None = None, 
                 status: str | None = None, 
                 skip: int = 0, limit: int | None = None):
-    return TaskController.get_tasks(owner, status, skip, limit)
+    return await TaskController.get_tasks(owner, status, skip, limit)
 
-@router.get("/tasks/{id}")
+@router.get("/{id}")
 async def tasks_id(id: int):
-    return TaskController.get_tasks_by_id(id)
+    return await TaskController.get_tasks_by_id(id)
 
-@router.post("/tasks")
+@router.post("/")
 async def create_task(task: TaskCreate):
-    return TaskController.create_task(task)
+    return await TaskController.create_task(task)
+
+@router.delete("/{id}")
+async def delete_task(id: int):
+    return await TaskController.delete_task(id)
+
+@router.put("/{id}")
+async def update_task(id: int, task: TaskUpdate):
+    return await TaskController.update_task(id, task)

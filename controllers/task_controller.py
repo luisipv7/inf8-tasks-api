@@ -1,29 +1,34 @@
-import json
-class TaskController:
-    def __init__(self, task_id,):
-        self.id = task_id
 
-    async def get_tasks(self, owner: str | None = None, 
-                        status: str | None = None, 
-                        skip: int = 0, 
-                        limit: int | None = None):
-        dados = await self.ler_arquivo_json()
-        tasks_list = dados["tasks"]
+try:
+    from ..services.task_services import TaskServices
+except ImportError:
+    from services.task_services import TaskServices
 
-        filtered_tasks = [
-            task for task in tasks_list
-            if (owner is None or owner.lower() in task["owner"].lower())
-            and (status is None or status.lower() in task["status"].lower())
-        ]
-
-        if limit is None:
-            return filtered_tasks[skip:]
-        return filtered_tasks[skip:skip + limit]
+try:
+    from ..schemas.task_schema import TaskCreate, TaskUpdate
+except ImportError:
+    from schemas.task_schema import TaskCreate, TaskUpdate
     
+class TaskController:
+    @staticmethod
+    async def get_tasks(owner: str | None = None,
+                        status: str | None = None,
+                        skip: int = 0,
+                        limit: int | None = None):
+        return await TaskServices.get_tasks(owner, status, skip, limit)
 
+    @staticmethod
+    async def get_tasks_by_id(id: int):
+        return await TaskServices.get_tasks_by_id(id)
 
+    @staticmethod
+    async def create_task(task: TaskCreate):
+        return await TaskServices.create_task(task)
 
-    async def ler_arquivo_json():
-        with open("tasks.json", encoding="utf-8") as f:
-            dados = json.load(f)
-        return dados
+    @staticmethod
+    async def delete_task(id: int):
+        return await TaskServices.delete_task(id)
+
+    @staticmethod
+    async def update_task(id: int, task: TaskUpdate):
+        return await TaskServices.update_task(id, task)

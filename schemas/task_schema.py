@@ -8,3 +8,10 @@ class TaskBase(BaseModel):
 
 class TaskCreate(TaskBase):
     pass
+
+class TaskUpdate(TaskBase):
+    pass
+
+class Task(TaskBase):
+    id: int
+    model_config = ConfigDict(from_attributes=True)
