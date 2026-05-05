@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 
-try:
-    from .routes.task_routes import router
-except ImportError:
-    from routes.task_routes import router
+from routes.task_routes import router
 
 app = FastAPI(
     title="Todo API",
