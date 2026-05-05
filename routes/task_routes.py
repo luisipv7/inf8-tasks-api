@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
+from sqlmodel import Session
 
+from database import get_session
 from controllers.task_controller import TaskController
 from schemas.task_schema import TaskCreate, TaskUpdate
 from services.auth_service import get_current_active_user
@@ -13,21 +15,22 @@ router = APIRouter(
 @router.get("/")
 async def tasks(owner: str | None = None, 
                 status: str | None = None, 
-                skip: int = 0, limit: int | None = None):
-    return await TaskController.get_tasks(owner, status, skip, limit)
+                skip: int = 0, limit: int | None = None,
+                session: Session = Depends(get_session)):
+    return await TaskController.get_tasks(session, owner, status, skip, limit)
 
 @router.get("/{id}")
-async def tasks_id(id: int):
-    return await TaskController.get_tasks_by_id(id)
+async def tasks_id(id: int, session: Session = Depends(get_session)):
+    return await TaskController.get_tasks_by_id(session, id)
 
 @router.post("/")
-async def create_task(task: TaskCreate):
-    return await TaskController.create_task(task)
+async def create_task(task: TaskCreate, session: Session = Depends(get_session)):
+    return await TaskController.create_task(session, task)
 
 @router.delete("/{id}")
-async def delete_task(id: int):
-    return await TaskController.delete_task(id)
+async def delete_task(id: int, session: Session = Depends(get_session)):
+    return await TaskController.delete_task(session, id)
 
 @router.put("/{id}")
-async def update_task(id: int, task: TaskUpdate):
-    return await TaskController.update_task(id, task)
+async def update_task(id: int, task: TaskUpdate, session: Session = Depends(get_session)):
+    return await TaskController.update_task(session, id, task)

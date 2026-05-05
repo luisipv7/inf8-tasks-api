@@ -1,7 +1,17 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 
 from routes.auth_routes import router as auth_router
 from routes.task_routes import router as task_router
+from database import create_db_and_tables
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # inicializar recursos na inicialização da aplicação
+    create_db_and_tables()
+    yield
+
 
 app = FastAPI(
     title="Todo API",
@@ -10,7 +20,9 @@ app = FastAPI(
     contact={
         "name": "Equipe da disciplina INF8B",
     },
+    lifespan=lifespan,
 )
+
 
 app.include_router(auth_router)
 app.include_router(task_router)

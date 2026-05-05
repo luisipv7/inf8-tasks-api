@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from sqlmodel import Session
 
 from schemas.task_schema import TaskCreate, TaskUpdate
 from services.task_services import TaskServices
@@ -49,34 +50,37 @@ def _validate_task_model(name: str, value, expected_cls):
     
 class TaskController:
     @staticmethod
-    async def get_tasks(owner: str | None = None,
-                        status: str | None = None,
-                        skip: int = 0,
-                        limit: int | None = None):
+    async def get_tasks(
+        session: Session,
+        owner: str | None = None,
+        status: str | None = None,
+        skip: int = 0,
+        limit: int | None = None,
+    ):
         _validate_optional_str('owner', owner)
         _validate_status('status', status)
         _validate_non_negative_int('skip', skip)
         if limit is not None:
             _validate_positive_int('limit', limit)
-        return await TaskServices.get_tasks(owner, status, skip, limit)
+        return await TaskServices.get_tasks(session, owner, status, skip, limit)
 
     @staticmethod
-    async def get_tasks_by_id(id: int):
+    async def get_tasks_by_id(session: Session, id: int):
         _validate_positive_int('id', id)
-        return await TaskServices.get_tasks_by_id(id)
+        return await TaskServices.get_tasks_by_id(session, id)
 
     @staticmethod
-    async def create_task(task: TaskCreate):
+    async def create_task(session: Session, task: TaskCreate):
         _validate_task_model('task', task, TaskCreate)
-        return await TaskServices.create_task(task)
+        return await TaskServices.create_task(session, task)
 
     @staticmethod
-    async def delete_task(id: int):
+    async def delete_task(session: Session, id: int):
         _validate_positive_int('id', id)
-        return await TaskServices.delete_task(id)
+        return await TaskServices.delete_task(session, id)
 
     @staticmethod
-    async def update_task(id: int, task: TaskUpdate):
+    async def update_task(session: Session, id: int, task: TaskUpdate):
         _validate_positive_int('id', id)
         _validate_task_model('task', task, TaskUpdate)
-        return await TaskServices.update_task(id, task)
+        return await TaskServices.update_task(session, id, task)

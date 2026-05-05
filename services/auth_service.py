@@ -7,7 +7,10 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pwdlib import PasswordHash
+from sqlmodel import Session, select
 
+from database import get_session
+from models.user_model import User as UserModel
 from schemas.auth_schema import TokenData, User, UserInDB
 
 load_dotenv()
@@ -23,17 +26,6 @@ password_hash = PasswordHash.recommended()
 DUMMY_HASH = password_hash.hash("dummypassword")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
-fake_users_db = {
-    "johndoe": {
-        "username": "johndoe",
-        "full_name": "John Doe",
-        "email": "johndoe@example.com",
-        "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$wagCPXjifgvUFBzq4hqe3w$CYaIb8sB+wtD+Vu/P4uod1+Qof8h+1g7bbDlBID48Rc",
-        "disabled": False,
-    }
-}
-
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return password_hash.verify(plain_password, hashed_password)
 
@@ -42,15 +34,16 @@ def get_password_hash(password: str) -> str:
     return password_hash.hash(password)
 
 
-def get_user(username: str) -> UserInDB | None:
-    user_dict = fake_users_db.get(username)
-    if not user_dict:
+def get_user(session: Session, username: str) -> UserInDB | None:
+    statement = select(UserModel).where(UserModel.username == username)
+    user = session.exec(statement).first()
+    if not user:
         return None
-    return UserInDB(**user_dict)
+    return UserInDB.model_validate(user)
 
 
-def authenticate_user(username: str, password: str) -> UserInDB | None:
-    user = get_user(username)
+def authenticate_user(session: Session, username: str, password: str) -> UserInDB | None:
+    user = get_user(session, username)
     if not user:
         verify_password(password, DUMMY_HASH)
         return None
@@ -68,7 +61,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: Session = Depends(get_session),
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -84,7 +80,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     except InvalidTokenError as exc:
         raise credentials_exception from exc
 
-    user = get_user(token_data.username)
+    user = get_user(session, token_data.username)
     if user is None:
         raise credentials_exception
     return user

@@ -19,3 +19,5 @@ class User(BaseModel):
 
 class UserInDB(User):
     hashed_password: str
+
+    model_config = {"from_attributes": True}
