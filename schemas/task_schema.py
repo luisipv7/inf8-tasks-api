@@ -10,13 +10,9 @@ class TaskBase(BaseModel):
 class TaskCreate(TaskBase):
     pass
 
-class TaskUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=255)
-    description: str | None = Field(default=None)
-    comments: str | None = Field(default=None)
-    status: TaskStatus | None = Field(default=None)
-    owner_id: int | None = Field(default=None)
+class TaskUpdate(TaskBase):
+    pass
 
-class TaskResponse(TaskBase):
+class Task(TaskBase):
     id: int
     model_config = ConfigDict(from_attributes=True)
