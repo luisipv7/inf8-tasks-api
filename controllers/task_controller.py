@@ -1,16 +1,8 @@
-
-try:
-    from ..services.task_services import TaskServices
-except ImportError:
-    from services.task_services import TaskServices
-
-try:
-    from ..schemas.task_schema import TaskCreate, TaskUpdate
-except ImportError:
-    from schemas.task_schema import TaskCreate, TaskUpdate
-
 import os
 from dotenv import load_dotenv
+
+from schemas.task_schema import TaskCreate, TaskUpdate
+from services.task_services import TaskServices
 
 load_dotenv()
 

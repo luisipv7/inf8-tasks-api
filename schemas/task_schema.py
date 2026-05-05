@@ -1,5 +1,8 @@
 from pydantic import BaseModel, ConfigDict, Field
+
 from models.task_model import TaskStatus
+
+
 class TaskBase(BaseModel):
     title: str = Field(..., example="Fazer compras")
     description: str = Field(..., example="Comprar leite, pão e ovos")

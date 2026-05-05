@@ -1,11 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-try:
-    from ..controllers.task_controller import TaskController
-    from ..schemas.task_schema import TaskCreate, TaskUpdate
-except ImportError:
-    from controllers.task_controller import TaskController
-    from schemas.task_schema import TaskCreate, TaskUpdate
+from controllers.task_controller import TaskController
+from schemas.task_schema import TaskCreate, TaskUpdate
+from services.auth_service import get_current_active_user
 
 router = APIRouter(
     prefix="/tasks",

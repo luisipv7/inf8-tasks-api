@@ -2,10 +2,7 @@ import json
 from pathlib import Path
 from fastapi import HTTPException
 
-try:
-    from ..schemas.task_schema import TaskCreate, TaskUpdate
-except ImportError:
-    from schemas.task_schema import TaskCreate, TaskUpdate
+from schemas.task_schema import TaskCreate, TaskUpdate
 
 
 TASKS_FILE = Path(__file__).resolve().parents[1] / "tasks.json"
