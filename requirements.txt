@@ -1,4 +1,4 @@
 fastapi[standard]
 pydantic
-pyjwt
 pwdlib[argon2]
+python-dotenv
