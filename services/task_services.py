@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 from fastapi import HTTPException
+from sqlmodel import Session, select
+
+from models.task_model import Task
 
 try:
     from ..schemas.task_schema import TaskCreate, TaskUpdate
@@ -12,22 +15,22 @@ TASKS_FILE = Path(__file__).resolve().parents[1] / "tasks.json"
 
 class TaskServices:
     @staticmethod
-    async def get_tasks(owner: str | None = None,
+    async def get_tasks(session: Session,
+                        owner: str | None = None,
                         status: str | None = None,
                         skip: int = 0,
                         limit: int | None = None):
-        dados = await TaskServices.ler_arquivo_json()
-        tasks_list = dados["tasks"]
+        declaracao = select(Task)
+        if owner is not None:
+            declaracao = declaracao.where(Task.owner.contains(owner))
+        if status is not None:
+            declaracao = declaracao.where(Task.status == status.lower())
 
-        filtered_tasks = [
-            task for task in tasks_list
-            if (owner is None or owner.lower() in task["owner"].lower())
-            and (status is None or status.lower() in task["status"].lower())
-        ]
+        declaracao = declaracao.offset(skip)
+        if limit is not None:
+            declaracao = declaracao.limit(limit)
 
-        if limit is None:
-            return filtered_tasks[skip:]
-        return filtered_tasks[skip:skip + limit]
+        return session.exec(declaracao).all()
 
     @staticmethod
     async def get_tasks_by_id(id: int):

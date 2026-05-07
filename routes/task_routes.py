@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlmodel import Session
+
+from database import get_session
 
 try:
     from ..controllers.task_controller import TaskController
@@ -9,14 +12,15 @@ except ImportError:
 
 router = APIRouter(
     prefix="/tasks",
-    tags=["tasks"],
+    tags=["tasks"]
 )
 
 @router.get("/")
 async def tasks(owner: str | None = None, 
                 status: str | None = None, 
-                skip: int = 0, limit: int | None = None):
-    return await TaskController.get_tasks(owner, status, skip, limit)
+                skip: int = 0, limit: int | None = None,
+                session: Session = Depends(get_session)):
+    return await TaskController.get_tasks(session, owner, status, skip, limit)
 
 @router.get("/{id}")
 async def tasks_id(id: int):
