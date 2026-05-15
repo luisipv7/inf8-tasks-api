@@ -56,7 +56,7 @@
       <form method="dialog" class="dialog__card" id="taskForm">
         <header class="dialog__header">
           <h3 id="dialogTitle">Nova Task</h3>
-          <button class="iconbtn" value="cancel" aria-label="Fechar" type="submit">×</button>
+          <button class="iconbtn" id="closeTaskDialog" aria-label="Fechar" type="button">×</button>
         </header>
 
         <div class="dialog__body">
@@ -81,7 +81,7 @@
         </div>
 
         <footer class="dialog__footer">
-          <button class="btn btn--ghost" value="cancel" type="submit">Cancelar</button>
+          <button class="btn btn--ghost" id="cancelTaskDialog" type="button">Cancelar</button>
           <button class="btn btn--primary" value="default" type="submit">Salvar</button>
         </footer>
       </form>

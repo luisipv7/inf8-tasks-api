@@ -168,6 +168,8 @@ async function handleUpdate(task, patch) {
 const dialog = $("taskDialog");
 const fab = $("newTaskFab");
 const taskForm = $("taskForm");
+const closeTaskDialog = $("closeTaskDialog");
+const cancelTaskDialog = $("cancelTaskDialog");
 
 fab.addEventListener("click", () => {
   $("taskTitle").value = "";
@@ -175,6 +177,13 @@ fab.addEventListener("click", () => {
   $("taskStatus").value = "pendente";
   dialog.showModal();
 });
+
+function closeDialog() {
+  dialog.close();
+}
+
+closeTaskDialog.addEventListener("click", closeDialog);
+cancelTaskDialog.addEventListener("click", closeDialog);
 
 taskForm.addEventListener("submit", async (e) => {
   e.preventDefault();
