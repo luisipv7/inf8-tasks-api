@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  localStorage.getItem("API_BASE_URL") || "http://127.0.0.1:8000";
+  localStorage.getItem("API_BASE_URL") || window.location.origin;
 
 const TOKEN_KEY = "todo_token";
 
@@ -16,7 +16,7 @@ export function clearToken() {
 }
 
 async function request(path, { method = "GET", token, json, form } = {}) {
-  const headers = {};
+  const headers = { "ngrok-skip-browser-warning": "1" };
   if (token) headers.Authorization = `Bearer ${token}`;
   if (json) headers["Content-Type"] = "application/json";
   if (form) headers["Content-Type"] = "application/x-www-form-urlencoded";
