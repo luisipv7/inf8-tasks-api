@@ -33,49 +33,42 @@ class TaskServices:
         return session.exec(declaracao).all()
 
     @staticmethod
-    async def get_tasks_by_id(id: int):
-        response_tasks = await TaskServices.ler_arquivo_json()
-        tasks_list = response_tasks["tasks"]
-        task = next((item for item in tasks_list if item["id"] == id), None)
-        if task is None:
+    async def get_tasks_by_id(session: Session, id: int):
+        task = session.get(Task, id)
+        if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return task
 
     @staticmethod
-    async def create_task(task: TaskCreate):
-        tasks = await TaskServices.ler_arquivo_json()
-        last_id = tasks["tasks"][-1]["id"] if tasks["tasks"] else 0
-        new_task = task.model_dump()
-        new_task["id"] = last_id + 1
-        tasks["tasks"].append(new_task)
-        with TASKS_FILE.open("w", encoding="utf-8") as f:
-            json.dump(tasks, f, ensure_ascii=False, indent=4)
+    async def create_task(session: Session, task: TaskCreate):
+        new_task = Task(**task.model_dump(mode="json")) 
+        session.add(new_task)
+        session.commit()
+        session.refresh(new_task)
         return new_task
 
     @staticmethod
-    async def delete_task(id: int):
-        tasks_data = await TaskServices.ler_arquivo_json()
-        task_exists = any(item["id"] == id for item in tasks_data["tasks"])
-        if not task_exists:
+    async def delete_task(session: Session, id: int):
+        task = session.get(Task, id)
+        if not task:
             raise HTTPException(status_code=404, detail="Task not found")
-        tasks_data["tasks"] = [item for item in tasks_data["tasks"] if item["id"] != id]
-        with TASKS_FILE.open("w", encoding="utf-8") as f:
-            json.dump(tasks_data, f, ensure_ascii=False, indent=4)
-        return {"message": "Task deletada com sucesso"}
+        session.delete(task)
+        session.commit()
+        return {"ok": True}
 
     @staticmethod
-    async def update_task(id: int, task: TaskUpdate):
-        tasks_data = await TaskServices.ler_arquivo_json()
-        tasks_list = tasks_data["tasks"]
-        index = next((i for i, item in enumerate(tasks_list) if item["id"] == id), None)
-        if index is None:
-            raise HTTPException(status_code=404, detail="Task not found")
-        updated = task.model_dump()
-        updated["id"] = id
-        tasks_list[index] = updated
-        with TASKS_FILE.open("w", encoding="utf-8") as f:
-            json.dump(tasks_data, f, ensure_ascii=False, indent=4)
-        return updated
+    async def update_task(session: Session, id: int, task: TaskUpdate):
+        task_db = session.get(Task, id)
+        if not task_db:
+            raise HTTPException(status_code=404, detail="Hero not found")
+        task_data = task.model_dump(exclude_unset=True)
+        if "status" in task_data and task_data["status"] is not None:
+            task_data["status"] = task_data["status"].lower()
+        task_db.sqlmodel_update(task_data)
+        session.add(task_db)
+        session.commit()
+        session.refresh(task_db)
+        return task_db
     
     @staticmethod
     async def ler_arquivo_json():
