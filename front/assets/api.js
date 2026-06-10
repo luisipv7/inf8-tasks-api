@@ -59,8 +59,16 @@ export async function getMe() {
   return request("/auth/me", { token: getToken() });
 }
 
-export async function listTasks() {
-  return request("/tasks/", { token: getToken() });
+export async function listTasks(params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      query.set(key, String(value).trim());
+    }
+  }
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return request(`/tasks/${suffix}`, { token: getToken() });
 }
 
 export async function createTask(task) {

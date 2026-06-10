@@ -9,6 +9,35 @@ import {
 } from "./api.js";
 
 const STATUSES = ["pendente", "fazendo", "concluido"];
+const STATUS_ALIASES = {
+  pendente: "pendente",
+  todo: "pendente",
+  "to-do": "pendente",
+  fazer: "pendente",
+  aberto: "pendente",
+  fazendo: "fazendo",
+  doing: "fazendo",
+  andamento: "fazendo",
+  progresso: "fazendo",
+  concluido: "concluido",
+  concluído: "concluido",
+  done: "concluido",
+  finalizado: "concluido",
+  fechado: "concluido",
+};
+const PARAM_ALIASES = {
+  dono: "owner",
+  owner: "owner",
+  usuario: "owner",
+  usuário: "owner",
+  user: "owner",
+  status: "status",
+  estado: "status",
+  skip: "skip",
+  offset: "skip",
+  limit: "limit",
+  limite: "limit",
+};
 
 function $(id) {
   return document.getElementById(id);
@@ -24,6 +53,45 @@ function mustAuth() {
 
 function safeText(s) {
   return (s ?? "").toString();
+}
+
+function normalizeStatus(value) {
+  return STATUS_ALIASES[safeText(value).trim().toLowerCase()] || null;
+}
+
+function parseTaskSearch(raw) {
+  const params = {};
+  const ownerTerms = [];
+  const parts = safeText(raw).trim().split(/\s+/).filter(Boolean);
+
+  for (const part of parts) {
+    const match = part.match(/^([^:=]+)[:=](.+)$/);
+    if (match) {
+      const key = PARAM_ALIASES[match[1].toLowerCase()];
+      const value = match[2].trim();
+      if (key === "status") {
+        params.status = normalizeStatus(value) || value.toLowerCase();
+      } else if (key === "owner") {
+        ownerTerms.push(value);
+      } else if ((key === "skip" || key === "limit") && /^\d+$/.test(value)) {
+        params[key] = value;
+      }
+      continue;
+    }
+
+    const status = normalizeStatus(part);
+    if (status) {
+      params.status = status;
+    } else {
+      ownerTerms.push(part);
+    }
+  }
+
+  if (ownerTerms.length > 0) {
+    params.owner = ownerTerms.join(" ");
+  }
+
+  return params;
 }
 
 function setCounts(tasks) {
@@ -128,11 +196,12 @@ function escapeHtml(str) {
 
 let me = null;
 let tasksCache = [];
+let currentTaskQuery = {};
 
 async function refresh() {
   if (!mustAuth()) return;
 
-  tasksCache = await listTasks();
+  tasksCache = await listTasks(currentTaskQuery);
   setCounts(tasksCache);
 
   for (const st of STATUSES) {
@@ -170,6 +239,21 @@ const fab = $("newTaskFab");
 const taskForm = $("taskForm");
 const closeTaskDialog = $("closeTaskDialog");
 const cancelTaskDialog = $("cancelTaskDialog");
+const taskSearchForm = $("taskSearchForm");
+const taskSearchInput = $("taskSearchInput");
+const clearTaskSearch = $("clearTaskSearch");
+
+taskSearchForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  currentTaskQuery = parseTaskSearch(taskSearchInput.value);
+  await refresh();
+});
+
+clearTaskSearch.addEventListener("click", async () => {
+  taskSearchInput.value = "";
+  currentTaskQuery = {};
+  await refresh();
+});
 
 fab.addEventListener("click", () => {
   $("taskTitle").value = "";

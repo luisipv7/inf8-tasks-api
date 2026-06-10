@@ -12,15 +12,32 @@
         <div class="logo">Todo</div>
         <div class="topbar__meta">
           <div class="topbar__title">Painel Admin</div>
-          <div class="topbar__subtitle muted">Kanban simples (TODO • DOING • DONE)</div>
+          <div class="topbar__subtitle muted">
+            Kanban simples (TODO • DOING • DONE)
+          </div>
         </div>
+      </div>
+      <div>
+        <form class="search" id="taskSearchForm">
+          <input
+            type="text"
+            id="taskSearchInput"
+            name="q"
+            placeholder="Buscar por dono/status ou combine dono: joao status: fazendo skip:1"
+          />
+          <button class="btn btn--ghost" type="button" id="clearTaskSearch">
+            Limpar
+          </button>
+        </form>
       </div>
       <div class="topbar__right">
         <div class="user">
           <span class="muted">Logado como</span>
           <strong id="me">...</strong>
         </div>
-        <button id="logoutBtn" class="btn btn--ghost" type="button">Sair</button>
+        <button id="logoutBtn" class="btn btn--ghost" type="button">
+          Sair
+        </button>
       </div>
     </header>
 
@@ -50,13 +67,22 @@
       </section>
     </main>
 
-    <button id="newTaskFab" class="fab" type="button" title="Criar nova task">+</button>
+    <button id="newTaskFab" class="fab" type="button" title="Criar nova task">
+      +
+    </button>
 
     <dialog id="taskDialog" class="dialog">
       <form method="dialog" class="dialog__card" id="taskForm">
         <header class="dialog__header">
           <h3 id="dialogTitle">Nova Task</h3>
-          <button class="iconbtn" id="closeTaskDialog" aria-label="Fechar" type="button">×</button>
+          <button
+            class="iconbtn"
+            id="closeTaskDialog"
+            aria-label="Fechar"
+            type="button"
+          >
+            ×
+          </button>
         </header>
 
         <div class="dialog__body">
@@ -67,7 +93,12 @@
 
           <label class="field">
             <span>Descrição</span>
-            <textarea id="taskDescription" name="description" rows="3" required></textarea>
+            <textarea
+              id="taskDescription"
+              name="description"
+              rows="3"
+              required
+            ></textarea>
           </label>
 
           <label class="field">
@@ -81,8 +112,12 @@
         </div>
 
         <footer class="dialog__footer">
-          <button class="btn btn--ghost" id="cancelTaskDialog" type="button">Cancelar</button>
-          <button class="btn btn--primary" value="default" type="submit">Salvar</button>
+          <button class="btn btn--ghost" id="cancelTaskDialog" type="button">
+            Cancelar
+          </button>
+          <button class="btn btn--primary" value="default" type="submit">
+            Salvar
+          </button>
         </footer>
       </form>
     </dialog>

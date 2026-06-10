@@ -16,7 +16,7 @@ class TaskServices:
     ):
         statement = select(Task)
         if owner is not None:
-            statement = statement.where(Task.owner.contains(owner))
+            statement = statement.where(Task.owner.ilike(f"%{owner}%"))
         if status is not None:
             statement = statement.where(Task.status == status.lower())
 

@@ -27,6 +27,29 @@ def _validate_optional_str(name: str, value: str | None, max_len: int = 255):
         raise ValueError(f"{name} é muito longa (máx. {max_len} caracteres)")
 
 
+def _normalize_status(value: str | None):
+    if value is None:
+        return None
+    aliases = {
+        "pendente": "pendente",
+        "todo": "pendente",
+        "to-do": "pendente",
+        "fazer": "pendente",
+        "aberto": "pendente",
+        "fazendo": "fazendo",
+        "doing": "fazendo",
+        "andamento": "fazendo",
+        "progresso": "fazendo",
+        "concluido": "concluido",
+        "concluído": "concluido",
+        "done": "concluido",
+        "finalizado": "concluido",
+        "fechado": "concluido",
+    }
+    normalized = value.strip().lower()
+    return aliases.get(normalized, normalized)
+
+
 def _validate_status(name: str, value: str | None):
     """Valida status opcional entre os permitidos em TASK_ALLOWED_STATUSES."""
     if value is None:
@@ -37,7 +60,7 @@ def _validate_status(name: str, value: str | None):
     allowed = {s.strip().lower() for s in raw.split(',') if s.strip()} if raw else set()
     if not allowed:
         raise ValueError("TASK_ALLOWED_STATUSES deve ser configurada no arquivo .env")
-    val = value.strip().lower()
+    val = _normalize_status(value)
     if val not in allowed:
         allowed_list = ", ".join(sorted(allowed))
         raise ValueError(f"{name} inválido. Valores permitidos: {allowed_list}")
@@ -58,6 +81,7 @@ class TaskController:
         limit: int | None = None,
     ):
         _validate_optional_str('owner', owner)
+        status = _normalize_status(status)
         _validate_status('status', status)
         _validate_non_negative_int('skip', skip)
         if limit is not None:
